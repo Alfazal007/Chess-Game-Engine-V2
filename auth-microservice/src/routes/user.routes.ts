@@ -2,7 +2,7 @@ import { Router } from "express";
 import { registerUser } from "../controllers/userController/user.register";
 import { loginUser } from "../controllers/userController/user.login";
 import { isLoggedIn } from "../middlewares/auth.middleware";
-import { currentUser } from "../controllers/userController/currentuser.user";
+import { currentUser } from "../controllers/userController/user.currentUser";
 
 const userRouter = Router();
 
