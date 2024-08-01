@@ -4,7 +4,7 @@ import { Game } from "./Game";
 import { ConnectMessage, ExchangeMessages } from "../types/MessageInterfaces";
 import axios from "axios";
 import { authLink } from "../constants";
-import { CHAT, CONNECT } from "../types/MessageType";
+import { CHAT, CONNECT, MOVE } from "../types/MessageType";
 
 export class GameManager {
     // variables
@@ -149,6 +149,68 @@ export class GameManager {
                     messageType.chatPayload.message,
                     ws
                 );
+            } else if (messageType.type == MOVE) {
+                // check for move payload
+                if (!messageType.movePayload) {
+                    ws.send(
+                        JSON.stringify({
+                            message: "invalid payload",
+                        })
+                    );
+                    return;
+                }
+                // check for valid and complete data
+                if (
+                    !messageType.movePayload.from ||
+                    messageType.movePayload.from.trim() == "" ||
+                    !messageType.movePayload.to ||
+                    messageType.movePayload.to.trim() == "" ||
+                    !messageType.movePayload.gameId ||
+                    messageType.movePayload.gameId.trim() == ""
+                ) {
+                    ws.send(
+                        JSON.stringify({
+                            message: "invalid payload",
+                        })
+                    );
+                    return;
+                }
+                // find the required game
+                const requiredGame = this.games.find(
+                    (game) => game.id == messageType.movePayload?.gameId
+                );
+                if (!requiredGame) {
+                    ws.send(
+                        JSON.stringify({
+                            message: "invalid game",
+                        })
+                    );
+                    return;
+                }
+                // check if it is this players game
+                if (
+                    requiredGame.player1.ws != ws &&
+                    requiredGame.player2.ws != ws
+                ) {
+                    ws.send(
+                        JSON.stringify({
+                            message: "You are not part of this game",
+                        })
+                    );
+                    return;
+                }
+                requiredGame.makeMove(
+                    messageType.movePayload.from,
+                    messageType.movePayload.to,
+                    ws
+                );
+                if (requiredGame.board.isGameOver()) {
+                    // remove from the array
+                    this.games = this.games.filter(
+                        (game) => game.id != requiredGame.id
+                    );
+                    return;
+                }
             } else {
                 ws.close();
             }
