@@ -4,7 +4,8 @@ import { Game } from "./Game";
 import { ConnectMessage, ExchangeMessages } from "../types/MessageInterfaces";
 import axios from "axios";
 import { authLink } from "../constants";
-import { CHAT, CONNECT, MOVE } from "../types/MessageType";
+import { CHAT, CONNECT, MOVE, START } from "../types/MessageType";
+import { updateRedis } from "../RedisUpdate";
 
 export class GameManager {
     // variables
@@ -70,6 +71,7 @@ export class GameManager {
                 const newGame = new Game(this.playerWaiting, newPlayer, id);
                 this.games.push(newGame);
                 this.idToGame.set(id, newGame);
+                await updateRedis("", "", id, "", START);
                 this.playerWaiting = null;
                 // TODO:: Add this game to the database
             }
@@ -199,7 +201,7 @@ export class GameManager {
                     );
                     return;
                 }
-                requiredGame.makeMove(
+                await requiredGame.makeMove(
                     messageType.movePayload.from,
                     messageType.movePayload.to,
                     ws

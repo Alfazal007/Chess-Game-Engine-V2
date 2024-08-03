@@ -2,6 +2,7 @@ import { User } from "./User";
 import { CHAT, Game_Over, MOVE } from "../types/MessageType";
 import { WebSocket } from "ws";
 import { Chess } from "chess.js";
+import { updateRedis } from "../RedisUpdate";
 export class Game {
     player1: User;
     player2: User;
@@ -47,7 +48,7 @@ export class Game {
         );
     }
 
-    makeMove(from: string, to: string, ws: WebSocket) {
+    async makeMove(from: string, to: string, ws: WebSocket) {
         if (this.moveCount % 2 === 0 && ws !== this.player1.ws) {
             // this is player 1s move
             console.log("Not this user's turn right now");
@@ -63,6 +64,14 @@ export class Game {
                 from: from,
                 to: to,
             });
+            // redis updations here
+            await updateRedis(
+                from,
+                to,
+                this.id,
+                this.board.turn() === "w" ? "black" : "white",
+                MOVE
+            );
         } catch (err) {
             // @ts-ignore
             console.log("There was an error in the sent move", err.message);
