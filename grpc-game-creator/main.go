@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log"
 	"net"
 	"os"
@@ -24,6 +25,8 @@ type myGameServer struct {
 func (s *myGameServer) CreateGame(ctx context.Context, req *create_game.CreateRequest) (*create_game.CreateResponse, error) {
 	// add the logic to create a new game here
 	res := apiCfg.CreateNewGame(req.Id, req.PlayerId1, req.PlayerId2)
+	log.Println("Called the function")
+	log.Println(res)
 	return &create_game.CreateResponse{
 		Created: res,
 	}, nil
@@ -31,6 +34,7 @@ func (s *myGameServer) CreateGame(ctx context.Context, req *create_game.CreateRe
 
 func (s *myGameServer) DeleteGame(ctx context.Context, req *create_game.DeleteRequest) (*create_game.DeleteResponse, error) {
 	// add the logic to delete the game
+	fmt.Println("Delete game started")
 	res := apiCfg.DeleteGame(req.Id)
 	return &create_game.DeleteResponse{
 		Deleted: res,

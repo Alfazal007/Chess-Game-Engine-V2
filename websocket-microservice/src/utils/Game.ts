@@ -31,6 +31,8 @@ export class Game {
                 opponentEmailToBeRemoved: player1.email,
             })
         );
+        // save this new game into the database
+        
     }
 
     sendTextMessage(message: string, sender: WebSocket) {

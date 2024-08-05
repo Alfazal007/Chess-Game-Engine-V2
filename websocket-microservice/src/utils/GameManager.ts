@@ -6,6 +6,7 @@ import axios from "axios";
 import { authLink } from "../constants";
 import { CHAT, CONNECT, MOVE, START } from "../types/MessageType";
 import { updateRedis } from "../RedisUpdate";
+import { GameHandlerClient } from "../generated/GameHandler";
 
 export class GameManager {
     // variables
@@ -14,19 +15,39 @@ export class GameManager {
     private games: Game[];
     private players: Set<string>;
     private idToGame: Map<string, Game>;
+    private static gameStub: GameHandlerClient;
 
     // constructor
-    constructor() {
+    constructor(gameStub: GameHandlerClient) {
         this.playerWaiting = null;
         this.games = [];
         this.players = new Set();
         this.idToGame = new Map();
+        if (!GameManager.gameStub) {
+            GameManager.gameStub = gameStub;
+        }
     }
 
+    private static createGame = (gameData: {
+        id: string;
+        playerId1: string;
+        playerId2: string;
+    }) => {
+        return new Promise((resolve, reject) => {
+            GameManager.gameStub.CreateGame(gameData, (error, response) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(response);
+                }
+            });
+        });
+    };
+
     // methods
-    public static getInstance(): GameManager {
+    public static getInstance(gameStub: GameHandlerClient): GameManager {
         if (!GameManager.client) {
-            GameManager.client = new GameManager();
+            GameManager.client = new GameManager(gameStub);
         }
         return GameManager.client;
     }
@@ -67,7 +88,21 @@ export class GameManager {
                 // create a new game as we have both users authenticated
                 const id =
                     (this.playerWaiting.email || "") + (newPlayer.email || "");
-                console.log(id);
+                // make the grpc call to create a new game and if it successful only then create one here
+                try {
+                    const res: any = await GameManager.createGame({
+                        id,
+                        playerId1: this.playerWaiting.email || "",
+                        playerId2: newPlayer.email || "",
+                    });
+                    if (!res || !res.created || res.created != true) {
+                        ws.close();
+                        return false;
+                    }
+                } catch (err) {
+                    ws.close();
+                    return false;
+                }
                 const newGame = new Game(this.playerWaiting, newPlayer, id);
                 this.games.push(newGame);
                 this.idToGame.set(id, newGame);

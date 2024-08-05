@@ -43,3 +43,20 @@ func (q *Queries) FindExistingGameAndDelete(ctx context.Context, player1id strin
 	_, err := q.db.ExecContext(ctx, findExistingGameAndDelete, player1id)
 	return err
 }
+
+const idFromEmailUser = `-- name: IdFromEmailUser :one
+SELECT id, username, email, password, "refreshToken" FROM "User" where "email"=$1
+`
+
+func (q *Queries) IdFromEmailUser(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRowContext(ctx, idFromEmailUser, email)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Email,
+		&i.Password,
+		&i.RefreshToken,
+	)
+	return i, err
+}
