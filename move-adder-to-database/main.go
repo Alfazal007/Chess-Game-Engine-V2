@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -49,8 +51,23 @@ func main() {
 		DB:    database.New(conn),
 		REDIS: redis,
 	}
-	// remove this lines
-	fmt.Println(apiCfg.DB)
 
-	// fmt.Println("Hello World!")
+	for {
+		data := apiCfg.REDIS.BRPop(context.Background(), 0, "move")
+		val, err := data.Result()
+		if err != nil {
+			fmt.Println("Error popping from Redis:", err)
+			return
+		}
+		var dataInsert controller.IncomingData
+		err = json.Unmarshal([]byte(val[1]), &dataInsert)
+		if err != nil {
+			fmt.Println("Error unmarshalling JSON:", err)
+			return
+		}
+		if dataInsert.TypeOfInformation == "move" {
+			res := apiCfg.AddMove(dataInsert)
+			fmt.Println("Added database = ", res)
+		}
+	}
 }

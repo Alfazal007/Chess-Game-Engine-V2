@@ -106,7 +106,7 @@ export class GameManager {
                 const newGame = new Game(this.playerWaiting, newPlayer, id);
                 this.games.push(newGame);
                 this.idToGame.set(id, newGame);
-                await updateRedis("", "", id, "", START);
+                // await updateRedis("", "", id, "", START);
                 this.playerWaiting = null;
                 // TODO:: Add this game to the database
             }

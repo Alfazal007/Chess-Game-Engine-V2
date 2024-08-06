@@ -6,32 +6,19 @@ export async function updateRedis(
     to: string,
     gameId: string,
     color: string,
-    type: string,
-    player1Email: string = "",
-    player2Email: string = ""
+    typeOfInformation: string
 ) {
     try {
-        if (type == MOVE) {
+        if (typeOfInformation == MOVE) {
             await client.lPush(
                 "move",
                 JSON.stringify({
-                    type,
+                    typeOfInformation,
                     from,
                     to,
                     gameId,
                     color,
-                    timestamp: new Date().getTime(),
-                })
-            );
-        } else {
-            await client.lPush(
-                "move",
-                JSON.stringify({
-                    type,
-                    gameId,
-                    player1Email,
-                    player2Email,
-                    timestamp: new Date().getTime(),
+                    timestamp: new Date().getTime().toString(),
                 })
             );
         }
