@@ -50,6 +50,7 @@ const loginUser = asyncHandler(async (req: Request, res: Response) => {
         // update refresh token and access tokens
         const accessToken = createAccessToken(userFromDB);
         const refreshToken = createRefreshToken(userFromDB);
+        let userAfterUpdate;
         try {
             const updatedUser = await prisma.user.update({
                 where: {
@@ -58,12 +59,18 @@ const loginUser = asyncHandler(async (req: Request, res: Response) => {
                 data: {
                     refreshToken,
                 },
+                select: {
+                    email: true,
+                    username: true,
+                    id: true,
+                },
             });
             if (!updatedUser) {
                 return res
                     .status(400)
                     .json(new ApiError(400, "Issue talking to the database"));
             }
+            userAfterUpdate = updatedUser;
         } catch (err) {
             return res
                 .status(400)
@@ -81,6 +88,7 @@ const loginUser = asyncHandler(async (req: Request, res: Response) => {
                 new ApiResponse(200, "Login successful", {
                     accessToken,
                     refreshToken,
+                    userAfterUpdate,
                 })
             );
     } catch (err) {
