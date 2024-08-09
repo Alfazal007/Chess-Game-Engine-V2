@@ -17,8 +17,10 @@ export class Game {
         this.board = new Chess();
         this.moveCount = 0;
         // send black and white information here as a new game has been initialized
+
         player1.ws.send(
             JSON.stringify({
+                type: "game_start",
                 gameId: id,
                 color: "white",
                 opponentEmailToBeRemoved: player2.email,
@@ -26,13 +28,13 @@ export class Game {
         );
         player2.ws.send(
             JSON.stringify({
+                type: "game_start",
                 gameId: id,
                 color: "black",
                 opponentEmailToBeRemoved: player1.email,
             })
         );
         // save this new game into the database
-        
     }
 
     sendTextMessage(message: string, sender: WebSocket) {
@@ -79,50 +81,29 @@ export class Game {
             console.log("There was an error in the sent move", err.message);
             return;
         }
-        if (this.board.isGameOver()) {
-            // disconnect the players
-            this.player1.ws.send(
-                JSON.stringify({
-                    type: Game_Over,
-                    payload: {
-                        winner: this.board.turn() === "w" ? "black" : "white",
-                    },
-                })
-            );
-            this.player1.ws.close();
-            this.player2.ws.send(
-                JSON.stringify({
-                    type: Game_Over,
-                    payload: {
-                        winner: this.board.turn() === "w" ? "black" : "white",
-                    },
-                })
-            );
-            this.player2.ws.close();
-            return;
-        }
-        if (this.moveCount % 2 === 0) {
-            this.player2.ws.send(
-                JSON.stringify({
-                    type: MOVE,
-                    payload: {
-                        from: from,
-                        to: to,
-                    },
-                })
-            );
-        }
-        if (this.moveCount % 2 !== 0) {
-            this.player1.ws.send(
-                JSON.stringify({
-                    type: MOVE,
-                    payload: {
-                        from: from,
-                        to: to,
-                    },
-                })
-            );
-        }
+
+        // if (this.moveCount % 2 === 0) {
+        this.player2.ws.send(
+            JSON.stringify({
+                type: MOVE,
+                payload: {
+                    from: from,
+                    to: to,
+                },
+            })
+        );
+        // }
+        // if (this.moveCount % 2 !== 0) {
+        this.player1.ws.send(
+            JSON.stringify({
+                type: MOVE,
+                payload: {
+                    from: from,
+                    to: to,
+                },
+            })
+        );
+        // }
         console.log(this.board.ascii());
         this.moveCount++;
     }

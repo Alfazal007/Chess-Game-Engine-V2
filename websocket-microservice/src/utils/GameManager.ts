@@ -4,7 +4,7 @@ import { Game } from "./Game";
 import { ConnectMessage, ExchangeMessages } from "../types/MessageInterfaces";
 import axios from "axios";
 import { authLink } from "../constants";
-import { CHAT, CONNECT, MOVE, START } from "../types/MessageType";
+import { CHAT, CONNECT, Game_Over, MOVE, START } from "../types/MessageType";
 import { updateRedis } from "../RedisUpdate";
 import { GameHandlerClient } from "../generated/GameHandler";
 
@@ -242,11 +242,33 @@ export class GameManager {
                     ws
                 );
                 if (requiredGame.board.isGameOver()) {
-                    // remove from the array
                     this.games = this.games.filter(
                         (game) => game.id != requiredGame.id
                     );
-                    return;
+                    requiredGame.player1.ws.send(
+                        JSON.stringify({
+                            type: Game_Over,
+                            payload: {
+                                winner:
+                                    requiredGame.board.turn() === "w"
+                                        ? "black"
+                                        : "white",
+                            },
+                        })
+                    );
+                    requiredGame.player1.ws.close();
+                    requiredGame.player2.ws.send(
+                        JSON.stringify({
+                            type: Game_Over,
+                            payload: {
+                                winner:
+                                    requiredGame.board.turn() === "w"
+                                        ? "black"
+                                        : "white",
+                            },
+                        })
+                    );
+                    requiredGame.player2.ws.close();
                 }
             } else {
                 ws.close();

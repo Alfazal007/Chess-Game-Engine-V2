@@ -1,13 +1,19 @@
+import { User } from "@/App";
+import { MOVE } from "@/messageTypes/simpleTypes";
 import { Chess, Color, PieceSymbol, Square } from "chess.js";
 import { Dispatch, SetStateAction, useState } from "react";
 
 export const ChessBoard = ({
     board,
     chess,
+    user,
     setBoard,
-}: // socket,
-{
-    // socket: WebSocket;
+    socket,
+    gameId,
+}: {
+    gameId: string;
+    user: User;
+    socket: WebSocket;
     setBoard: Dispatch<
         SetStateAction<
             ({ square: Square; type: PieceSymbol; color: Color } | null)[][]
@@ -23,6 +29,9 @@ export const ChessBoard = ({
 }) => {
     const [from, setFrom] = useState<string | null>(null);
     const [to, setTo] = useState<string | null>(null);
+    if (!socket) {
+        return <div>Connecting...</div>;
+    }
     return (
         <div>
             {board.map((row, i) => {
@@ -51,23 +60,16 @@ export const ChessBoard = ({
                                         } else {
                                             setTo(squareRepresentation);
                                             try {
-                                                // socket.send(
-                                                //     JSON.stringify({
-                                                //         type: MoveType,
-                                                //         payload: {
-                                                //             from,
-                                                //             to: squareRepresentation,
-                                                //         },
-                                                //     })
-                                                // );
-
-                                                chess.move({
-                                                    from,
-                                                    to: squareRepresentation,
-                                                });
-                                                // console.log(chess.isGameOver());
-                                                setBoard(chess.board());
-                                                // TODO:: send data over the websocket
+                                                socket.send(
+                                                    JSON.stringify({
+                                                        type: MOVE,
+                                                        movePayload: {
+                                                            from,
+                                                            to: squareRepresentation,
+                                                            gameId: gameId,
+                                                        },
+                                                    })
+                                                );
                                             } catch (err) {
                                                 console.log(err);
                                             } finally {
