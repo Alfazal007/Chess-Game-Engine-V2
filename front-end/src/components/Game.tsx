@@ -32,6 +32,7 @@ const Game = ({ user }: { user: User | null }) => {
             return;
         }
         if (!socket) {
+            console.log({ socket });
             return;
         }
         socket.onmessage = (event) => {
@@ -53,6 +54,10 @@ const Game = ({ user }: { user: User | null }) => {
                     break;
                 case Game_Over:
                     console.log("Game over");
+                    socket.close();
+                    alert(
+                        `The winner of this game is ${message.payload.winner}`
+                    );
                     navigate("/");
                     break;
                 case CHAT:

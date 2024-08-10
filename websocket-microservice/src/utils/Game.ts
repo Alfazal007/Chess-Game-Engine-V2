@@ -104,7 +104,6 @@ export class Game {
             })
         );
         // }
-        console.log(this.board.ascii());
         this.moveCount++;
     }
 }

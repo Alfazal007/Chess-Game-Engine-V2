@@ -9,3 +9,6 @@ DELETE FROM "Game" where "id"=$1;
 
 -- name: IdFromEmailUser :one
 SELECT * FROM "User" where "email"=$1;
+
+-- name: DeleteMoves :exec
+DELETE FROM "Move" WHERE "gameId" LIKE $1;

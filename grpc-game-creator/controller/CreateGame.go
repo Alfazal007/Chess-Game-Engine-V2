@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/grpc/game/internal/database"
 )
@@ -19,9 +20,18 @@ func (apiCfg *ApiCfg) CreateNewGame(id string, player1 string, player2 string) b
 		return false
 	}
 
+	err = apiCfg.DB.DeleteMoves(context.Background(), "%"+user1.Email+"%")
+	if err != nil {
+		return false
+	}
+	err = apiCfg.DB.DeleteMoves(context.Background(), "%"+user2.Email+"%")
+	if err != nil {
+		return false
+	}
 	// check if player1 is part of a game, if yes end it and delete the game
 	err = apiCfg.DB.FindExistingGameAndDelete(context.Background(), user1.ID)
 	if err != nil {
+		fmt.Println(err)
 		return false
 	}
 	// check if player2 is part of a game, if yes end it and delete the game

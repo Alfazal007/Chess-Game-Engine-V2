@@ -36,6 +36,7 @@ export class GameManager {
         return new Promise((resolve, reject) => {
             GameManager.gameStub.CreateGame(gameData, (error, response) => {
                 if (error) {
+                    console.log(error);
                     reject(error);
                 } else {
                     resolve(response);
@@ -87,7 +88,9 @@ export class GameManager {
             } else {
                 // create a new game as we have both users authenticated
                 const id =
-                    (this.playerWaiting.email || "") + (newPlayer.email || "");
+                    (this.playerWaiting.email || "") +
+                    "::" +
+                    (newPlayer.email || "");
                 // make the grpc call to create a new game and if it successful only then create one here
                 try {
                     const res: any = await GameManager.createGame({
@@ -245,6 +248,8 @@ export class GameManager {
                     this.games = this.games.filter(
                         (game) => game.id != requiredGame.id
                     );
+                    this.players.delete(requiredGame.player1.email || "");
+                    this.players.delete(requiredGame.player2.email || "");
                     requiredGame.player1.ws.send(
                         JSON.stringify({
                             type: Game_Over,

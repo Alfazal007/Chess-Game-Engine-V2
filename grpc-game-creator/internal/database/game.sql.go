@@ -35,6 +35,15 @@ func (q *Queries) DeleteACompletedGame(ctx context.Context, id string) error {
 	return err
 }
 
+const deleteMoves = `-- name: DeleteMoves :exec
+DELETE FROM "Move" WHERE "gameId" LIKE $1
+`
+
+func (q *Queries) DeleteMoves(ctx context.Context, gameid string) error {
+	_, err := q.db.ExecContext(ctx, deleteMoves, gameid)
+	return err
+}
+
 const findExistingGameAndDelete = `-- name: FindExistingGameAndDelete :exec
 DELETE FROM "Game" where "player1Id"=$1 OR "player2Id"=$1
 `
